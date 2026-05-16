@@ -1,0 +1,240 @@
+/* tuxscribe GTK3 stylesheet */
+
+window {
+    background-color: #f5f4f0;
+}
+
+/* Sidebar */
+.sidebar {
+    background-color: #2b2d30;
+    color: #d4d0c8;
+    min-width: 220px;
+}
+
+.sidebar-header {
+    background-color: #1e2024;
+    padding: 10px 12px;
+    border-bottom: 1px solid #1a1c1f;
+}
+
+.sidebar-title {
+    color: #e8dcc8;
+    font-size: 18px;
+    font-weight: bold;
+    font-family: serif;
+    letter-spacing: 1px;
+}
+
+.new-project-btn {
+    background-color: #c8a96e;
+    color: #1e2024;
+    border-radius: 4px;
+    font-weight: bold;
+    padding: 6px 10px;
+    border: none;
+    margin: 10px 12px;
+}
+
+.new-project-btn:hover {
+    background-color: #d4b87a;
+}
+
+.project-row {
+    padding: 8px 14px;
+    color: #c8c4bc;
+    border-bottom: 1px solid #232527;
+}
+
+.project-row:selected,
+.project-row:selected:focus {
+    background-color: #3d4147;
+    color: #e8dcc8;
+}
+
+.project-row:hover {
+    background-color: #343740;
+}
+
+.project-name-label {
+    font-size: 13px;
+}
+
+/* Main content area */
+.main-content {
+    background-color: #f5f4f0;
+}
+
+/* Notebook tabs */
+notebook tab {
+    padding: 6px 14px;
+    font-size: 12px;
+}
+
+notebook tab:checked {
+    font-weight: bold;
+}
+
+/* Chat / Brief view */
+.chat-area {
+    background-color: #ffffff;
+    border: 1px solid #ddd9d0;
+    border-radius: 6px;
+}
+
+.chat-message-user {
+    background-color: #e8f0fe;
+    color: #1a1a1a;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 4px 40px 4px 8px;
+}
+
+.chat-message-assistant {
+    background-color: #2e2e2e;
+    color: #e8e4dc;
+    border-radius: 8px;
+    padding: 8px 12px;
+    margin: 4px 8px 4px 40px;
+}
+
+.chat-input-scroll {
+    border: 2px solid #9a8f7a;
+    border-radius: 4px;
+    background-color: #ffffff;
+}
+
+.chat-input-scroll:focus-within {
+    border-color: #c8a96e;
+}
+
+.chat-input-scroll undershoot,
+.chat-input-scroll overshoot {
+    background: none;
+    border: none;
+    box-shadow: none;
+}
+
+.chat-input-scroll > viewport {
+    background-color: #ffffff;
+    border: none;
+    box-shadow: none;
+}
+
+.chat-input {
+    background-color: #ffffff;
+    padding: 6px;
+    font-size: 13px;
+}
+
+/* Buttons */
+.action-btn {
+    background-color: #c8a96e;
+    color: #1e1c18;
+    border-radius: 4px;
+    font-weight: bold;
+    border: none;
+    padding: 6px 16px;
+}
+
+.action-btn:hover {
+    background-color: #d4b87a;
+}
+
+.action-btn:disabled {
+    background-color: #d0ccc4;
+    color: #8a8880;
+}
+
+.danger-btn {
+    background-color: #c0392b;
+    color: #ffffff;
+    border-radius: 4px;
+    border: none;
+    padding: 4px 12px;
+}
+
+.danger-btn:hover {
+    background-color: #e74c3c;
+}
+
+/* Editor / manuscript */
+.manuscript-editor {
+    background-color: #ffffff;
+    border: 1px solid #ddd9d0;
+    border-radius: 4px;
+    font-family: "Liberation Serif", Georgia, serif;
+    font-size: 14px;
+    padding: 16px;
+}
+
+.status-bar {
+    background-color: #e8e4dc;
+    border-top: 1px solid #d0ccc4;
+    padding: 4px 12px;
+    font-size: 11px;
+    color: #6a6860;
+}
+
+/* Profile view */
+.profile-text {
+    font-family: monospace;
+    font-size: 12px;
+    background-color: #1e2024;
+    color: #c8c4bc;
+    border-radius: 4px;
+    padding: 12px;
+}
+
+/* Chapter list */
+.chapter-row {
+    padding: 6px 10px;
+    border-bottom: 1px solid #e0dcd4;
+}
+
+.chapter-row:selected {
+    background-color: #d4c9a8;
+}
+
+.chapter-number {
+    font-weight: bold;
+    color: #8a7a5a;
+    font-size: 11px;
+}
+
+/* Welcome screen */
+.welcome-title {
+    font-size: 32px;
+    font-family: serif;
+    color: #3a3020;
+    font-weight: bold;
+    letter-spacing: 2px;
+}
+
+.welcome-subtitle {
+    font-size: 14px;
+    color: #7a7060;
+}
+
+/* Spinner */
+spinner {
+    color: #c8a96e;
+}
+
+/* Warning / info bars */
+.info-bar {
+    background-color: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #856404;
+    font-size: 12px;
+}
+
+.error-bar {
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+    border-radius: 4px;
+    padding: 8px 12px;
+    color: #721c24;
+    font-size: 12px;
+}

@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48">
+  <!-- App background -->
+  <rect width="48" height="48" rx="8" fill="#2b2d30"/>
+  <!-- Book pages -->
+  <rect x="14" y="8" width="22" height="32" rx="2" fill="#f0ebe0"/>
+  <!-- Book spine -->
+  <rect x="11" y="8" width="6" height="32" rx="2" fill="#c8a96e"/>
+  <!-- Spine highlight -->
+  <rect x="11" y="8" width="3" height="32" rx="2" fill="#d4b87a"/>
+  <!-- Page lines -->
+  <line x1="19" y1="16" x2="33" y2="16" stroke="#c8b89a" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="19" y1="21" x2="33" y2="21" stroke="#c8b89a" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="19" y1="26" x2="33" y2="26" stroke="#c8b89a" stroke-width="1.5" stroke-linecap="round"/>
+  <line x1="19" y1="31" x2="28" y2="31" stroke="#c8b89a" stroke-width="1.5" stroke-linecap="round"/>
+</svg>

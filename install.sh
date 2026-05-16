@@ -1,0 +1,62 @@
+#!/bin/bash
+set -e
+
+APP_NAME="tuxscribe"
+INSTALL_DIR="/opt/${APP_NAME}"
+DESKTOP_DIR="/usr/share/applications"
+
+echo "=== Installing ${APP_NAME} ==="
+
+# Check for Python 3
+if ! command -v python3 &>/dev/null; then
+    echo "ERROR: python3 not found. Install it with: sudo apt install python3"
+    exit 1
+fi
+
+# Install system dependencies
+echo "Installing system dependencies..."
+sudo apt-get update -qq
+sudo apt-get install -y \
+    python3-gi \
+    python3-gi-cairo \
+    gir1.2-gtk-3.0 \
+    python3-requests \
+    python3-reportlab \
+    python3-docx \
+    python3-ebooklib \
+    libgtk-3-dev
+
+# Create install directory
+echo "Copying application files..."
+sudo mkdir -p "${INSTALL_DIR}"
+sudo cp -r "$(dirname "$0")"/* "${INSTALL_DIR}/"
+sudo chmod +x "${INSTALL_DIR}/tuxscribe.py"
+
+# Install icon
+echo "Installing icon..."
+sudo mkdir -p /usr/share/icons/hicolor/scalable/apps
+sudo cp "${INSTALL_DIR}/tuxscribe.svg" /usr/share/icons/hicolor/scalable/apps/tuxscribe.svg
+sudo gtk-update-icon-cache /usr/share/icons/hicolor 2>/dev/null || true
+
+# Install desktop entry
+echo "Installing desktop entry..."
+sudo cp "${INSTALL_DIR}/tuxscribe.desktop" "${DESKTOP_DIR}/"
+sudo update-desktop-database "${DESKTOP_DIR}" 2>/dev/null || true
+
+# Create a launcher in /usr/local/bin
+echo "Creating launcher..."
+sudo tee /usr/local/bin/tuxscribe > /dev/null << 'EOF'
+#!/bin/bash
+exec python3 /opt/tuxscribe/tuxscribe.py "$@"
+EOF
+sudo chmod +x /usr/local/bin/tuxscribe
+
+echo ""
+echo "=== Installation complete! ==="
+echo ""
+echo "Run tuxscribe:"
+echo "  - From the terminal: tuxscribe"
+echo "  - From the application menu: search for 'Tuxscribe'"
+echo ""
+echo "On first launch, open Settings (⚙ button) and enter your OpenRouter API key."
+echo "Get a free API key at: https://openrouter.ai/keys"
