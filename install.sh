@@ -40,7 +40,7 @@ sudo python3 -m venv --system-site-packages "${INSTALL_DIR}/venv"
 echo "Installing icon..."
 sudo mkdir -p /usr/share/icons/hicolor/scalable/apps
 sudo cp "${INSTALL_DIR}/tuxscribe.svg" /usr/share/icons/hicolor/scalable/apps/tuxscribe.svg
-sudo gtk-update-icon-cache /usr/share/icons/hicolor 2>/dev/null || true
+sudo gtk-update-icon-cache -f -t /usr/share/icons/hicolor 2>/dev/null || true
 
 # Install desktop entry
 echo "Installing desktop entry..."
