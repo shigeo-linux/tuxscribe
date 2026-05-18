@@ -51,6 +51,9 @@ exec python3 /opt/tuxscribe/tuxscribe.py "$@"
 EOF
 sudo chmod +x /usr/local/bin/tuxscribe
 
+echo "Creating config directory..."
+mkdir -p "$HOME/.config/${APP_NAME}"
+
 echo ""
 echo "=== Installation complete! ==="
 echo ""
