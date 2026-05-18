@@ -24,13 +24,17 @@ sudo apt-get install -y \
     python3-reportlab \
     python3-docx \
     python3-ebooklib \
-    libgtk-3-dev
+    libgtk-3-dev \
+    python3-venv
 
 # Create install directory
 echo "Copying application files..."
 sudo mkdir -p "${INSTALL_DIR}"
 sudo cp -r "$(dirname "$0")"/* "${INSTALL_DIR}/"
 sudo chmod +x "${INSTALL_DIR}/tuxscribe.py"
+
+echo "Creating virtual environment..."
+sudo python3 -m venv --system-site-packages "${INSTALL_DIR}/venv"
 
 # Install icon
 echo "Installing icon..."
@@ -47,7 +51,7 @@ sudo update-desktop-database "${DESKTOP_DIR}" 2>/dev/null || true
 echo "Creating launcher..."
 sudo tee /usr/local/bin/tuxscribe > /dev/null << 'EOF'
 #!/bin/bash
-exec python3 /opt/tuxscribe/tuxscribe.py "$@"
+exec /opt/tuxscribe/venv/bin/python3 /opt/tuxscribe/tuxscribe.py "$@"
 EOF
 sudo chmod +x /usr/local/bin/tuxscribe
 
