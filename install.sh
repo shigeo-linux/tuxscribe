@@ -25,7 +25,7 @@ sudo apt-get install -y \
     python3-docx \
     python3-ebooklib \
     libgtk-3-dev \
-    python3-venv
+    python3-venv librsvg2-bin
 
 # Create install directory
 echo "Copying application files..."
@@ -39,7 +39,11 @@ sudo python3 -m venv --system-site-packages "${INSTALL_DIR}/venv"
 # Install icon
 echo "Installing icon..."
 sudo mkdir -p /usr/share/icons/hicolor/scalable/apps
+sudo mkdir -p /usr/share/icons/hicolor/48x48/apps
+sudo mkdir -p /usr/share/icons/hicolor/256x256/apps
 sudo cp "${INSTALL_DIR}/tuxscribe.svg" /usr/share/icons/hicolor/scalable/apps/tuxscribe.svg
+rsvg-convert -w 48 -h 48 "${INSTALL_DIR}/tuxscribe.svg" | sudo tee /usr/share/icons/hicolor/48x48/apps/tuxscribe.png > /dev/null
+rsvg-convert -w 256 -h 256 "${INSTALL_DIR}/tuxscribe.svg" | sudo tee /usr/share/icons/hicolor/256x256/apps/tuxscribe.png > /dev/null
 sudo gtk-update-icon-cache -f -t /usr/share/icons/hicolor 2>/dev/null || true
 
 # Install desktop entry
