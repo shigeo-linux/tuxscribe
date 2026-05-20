@@ -6,7 +6,7 @@ CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 
 DEFAULTS = {
     'api_key': '',
-    'model': 'anthropic/claude-3.5-sonnet',
+    'model': 'openrouter/auto',
     'base_url': 'https://openrouter.ai/api/v1',
     'site_url': 'https://tuxscribe.app',
     'site_name': 'tuxscribe',

@@ -3,7 +3,8 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 POPULAR_MODELS = [
-    ('anthropic/claude-3.5-sonnet', 'Claude 3.5 Sonnet (Recommended)'),
+    ('openrouter/auto', 'Auto Router'),
+    ('anthropic/claude-3.5-sonnet', 'Claude 3.5 Sonnet'),
     ('anthropic/claude-3-opus', 'Claude 3 Opus'),
     ('anthropic/claude-3-haiku', 'Claude 3 Haiku (Fast)'),
     ('openai/gpt-4o', 'GPT-4o'),
