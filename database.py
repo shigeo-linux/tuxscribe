@@ -6,6 +6,23 @@ DB_DIR = os.path.expanduser('~/.local/share/tuxscribe')
 DB_PATH = os.path.join(DB_DIR, 'tuxscribe.db')
 
 SCHEMA = """
+CREATE TABLE IF NOT EXISTS series (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    created_at TEXT DEFAULT (datetime('now')),
+    updated_at TEXT DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS series_sources (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    series_id INTEGER NOT NULL,
+    filename TEXT NOT NULL,
+    content TEXT NOT NULL,
+    summary TEXT DEFAULT '',
+    created_at TEXT DEFAULT (datetime('now')),
+    FOREIGN KEY (series_id) REFERENCES series(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS sources (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     project_id INTEGER NOT NULL,
@@ -89,15 +106,97 @@ class Database:
         for col in ('cite_title', 'cite_author', 'cite_year', 'cite_publisher', 'cite_city'):
             if col not in src_cols:
                 self.conn.execute(f"ALTER TABLE sources ADD COLUMN {col} TEXT DEFAULT ''")
+        proj_cols = [r[1] for r in self.conn.execute("PRAGMA table_info(projects)").fetchall()]
+        if 'series_id' not in proj_cols:
+            self.conn.execute("ALTER TABLE projects ADD COLUMN series_id INTEGER")
         self.conn.commit()
 
     def _now(self):
         return datetime.now().isoformat(sep=' ', timespec='seconds')
 
-    # Projects
-    def create_project(self, name, project_type='novel'):
+    # Series
+    def create_series(self, name):
+        cur = self.conn.execute("INSERT INTO series (name) VALUES (?)", (name,))
+        self.conn.commit()
+        return cur.lastrowid
+
+    def get_series(self):
+        return self.conn.execute("SELECT * FROM series ORDER BY name").fetchall()
+
+    def get_series_by_id(self, series_id):
+        return self.conn.execute("SELECT * FROM series WHERE id = ?", (series_id,)).fetchone()
+
+    def rename_series(self, series_id, name):
+        self.conn.execute(
+            "UPDATE series SET name = ?, updated_at = ? WHERE id = ?",
+            (name, self._now(), series_id)
+        )
+        self.conn.commit()
+
+    def delete_series(self, series_id):
+        self.conn.execute("UPDATE projects SET series_id = NULL WHERE series_id = ?", (series_id,))
+        self.conn.execute("DELETE FROM series WHERE id = ?", (series_id,))
+        self.conn.commit()
+
+    def set_project_series(self, project_id, series_id):
+        self.conn.execute(
+            "UPDATE projects SET series_id = ? WHERE id = ?", (series_id, project_id)
+        )
+        self.conn.commit()
+
+    def get_series_projects(self, series_id):
+        return self.conn.execute(
+            "SELECT * FROM projects WHERE series_id = ? ORDER BY created_at",
+            (series_id,)
+        ).fetchall()
+
+    def get_projects_without_series(self):
+        return self.conn.execute(
+            "SELECT * FROM projects WHERE series_id IS NULL ORDER BY updated_at DESC"
+        ).fetchall()
+
+    # Series sources
+    def get_series_sources(self, series_id):
+        return self.conn.execute(
+            "SELECT id, series_id, filename, created_at FROM series_sources WHERE series_id = ? ORDER BY created_at",
+            (series_id,)
+        ).fetchall()
+
+    def add_series_source(self, series_id, filename, content):
         cur = self.conn.execute(
-            "INSERT INTO projects (name, project_type) VALUES (?, ?)", (name, project_type)
+            "INSERT INTO series_sources (series_id, filename, content) VALUES (?, ?, ?)",
+            (series_id, filename, content)
+        )
+        self.conn.commit()
+        return cur.lastrowid
+
+    def delete_series_source(self, source_id):
+        self.conn.execute("DELETE FROM series_sources WHERE id = ?", (source_id,))
+        self.conn.commit()
+
+    def get_all_series_source_content(self, series_id):
+        return self.conn.execute(
+            "SELECT id, filename, content, summary FROM series_sources WHERE series_id = ? ORDER BY created_at",
+            (series_id,)
+        ).fetchall()
+
+    def get_series_source_content(self, source_id):
+        row = self.conn.execute(
+            "SELECT content FROM series_sources WHERE id = ?", (source_id,)
+        ).fetchone()
+        return row['content'] if row else ''
+
+    def save_series_source_summary(self, source_id, summary):
+        self.conn.execute(
+            "UPDATE series_sources SET summary = ? WHERE id = ?", (summary, source_id)
+        )
+        self.conn.commit()
+
+    # Projects
+    def create_project(self, name, project_type='novel', series_id=None):
+        cur = self.conn.execute(
+            "INSERT INTO projects (name, project_type, series_id) VALUES (?, ?, ?)",
+            (name, project_type, series_id)
         )
         self.conn.commit()
         return cur.lastrowid

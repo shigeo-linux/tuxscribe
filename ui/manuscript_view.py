@@ -1,7 +1,7 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject, Pango
-from ui.source_utils import build_sources_prompt
+from ui.source_utils import build_combined_sources_prompt
 
 WRITE_SYSTEM = """You are a skilled ghostwriter. Your task is to write a complete chapter draft that precisely matches the voice profile and serves the project brief.
 
@@ -312,7 +312,6 @@ class ManuscriptView(Gtk.Box):
             for c in all_chapters
         )
         excluded = [r['phrase'] for r in self.db.get_excluded_phrases()]
-        sources = self.db.get_all_source_content(self.project_id)
 
         existing = self._get_editor_text().strip()
         if existing:
@@ -354,9 +353,9 @@ Synopsis: {synopsis}
 
 Write the complete chapter now."""
 
-        sources_text = build_sources_prompt(sources)
+        sources_text = self._build_sources_text()
         if sources_text:
-            user_content = f"RESEARCH SOURCES:\n\n{sources_text}\n\n---\n\n{user_content}"
+            user_content = f"SOURCES:\n\n{sources_text}\n\n---\n\n{user_content}"
 
         if voice_profile:
             system = f"{WRITE_SYSTEM}\n\n---\nVOICE PROFILE:\n{voice_profile}"
@@ -411,7 +410,6 @@ Write the complete chapter now."""
         ch = self.db.get_chapter(self._current_chapter_id)
         voice_profile = self.db.get_voice_profile(self.project_id)
         excluded = [r['phrase'] for r in self.db.get_excluded_phrases()]
-        sources = self.db.get_all_source_content(self.project_id)
 
         self._writing = True
         self.write_btn.set_sensitive(False)
@@ -432,9 +430,9 @@ Synopsis: {synopsis}
 CURRENT DRAFT:
 {content}"""
 
-        sources_text = build_sources_prompt(sources)
+        sources_text = self._build_sources_text()
         if sources_text:
-            user_content = f"RESEARCH SOURCES:\n\n{sources_text}\n\n---\n\n{user_content}"
+            user_content = f"SOURCES:\n\n{sources_text}\n\n---\n\n{user_content}"
 
         if voice_profile:
             system = f"{REVISE_SYSTEM}\n\n---\nVOICE PROFILE:\n{voice_profile}"
@@ -450,6 +448,17 @@ CURRENT DRAFT:
             on_done=self._on_write_done,
             on_error=self._on_write_error,
         )
+
+    def _build_sources_text(self):
+        proj = self.db.get_project(self.project_id)
+        series_sources, series_name = [], None
+        if proj and proj['series_id']:
+            s = self.db.get_series_by_id(proj['series_id'])
+            if s:
+                series_name = s['name']
+                series_sources = list(self.db.get_all_series_source_content(proj['series_id']))
+        project_sources = list(self.db.get_all_source_content(self.project_id))
+        return build_combined_sources_prompt(series_name, series_sources, project_sources)
 
     def _show_error(self, msg):
         dialog = Gtk.MessageDialog(

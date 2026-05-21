@@ -1,7 +1,7 @@
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, Pango
-from ui.source_utils import build_sources_prompt
+from ui.source_utils import build_combined_sources_prompt
 
 EDITOR_SYSTEM = """You are a developmental editor helping a writer develop their novel or long-form non-fiction project.
 
@@ -220,10 +220,9 @@ class BriefView(Gtk.Box):
 
         system = EDITOR_SYSTEM
         if self.project_id:
-            sources = self.db.get_all_source_content(self.project_id)
-            sources_text = build_sources_prompt(sources)
+            sources_text = self._build_sources_text()
             if sources_text:
-                system = f"{EDITOR_SYSTEM}\n\n---\nRESEARCH SOURCES FOR THIS PROJECT:\n\n{sources_text}"
+                system = f"{EDITOR_SYSTEM}\n\n---\nSOURCES:\n\n{sources_text}"
 
         self.api_client.stream_complete(
             messages=self._messages,
@@ -298,6 +297,17 @@ class BriefView(Gtk.Box):
             f'<span color="gray"> (500+ recommended)</span>'
         )
         self.summary_btn.set_sensitive(total >= 100)
+
+    def _build_sources_text(self):
+        proj = self.db.get_project(self.project_id)
+        series_sources, series_name = [], None
+        if proj and proj['series_id']:
+            s = self.db.get_series_by_id(proj['series_id'])
+            if s:
+                series_name = s['name']
+                series_sources = list(self.db.get_all_series_source_content(proj['series_id']))
+        project_sources = list(self.db.get_all_source_content(self.project_id))
+        return build_combined_sources_prompt(series_name, series_sources, project_sources)
 
     def _show_error(self, msg):
         err_bar = Gtk.InfoBar()

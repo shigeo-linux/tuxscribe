@@ -71,6 +71,7 @@ class MainWindow(Gtk.ApplicationWindow):
 
         # Sidebar
         self.sidebar = Sidebar(self.db)
+        self.sidebar.set_api_client(self.api_client)
         self.sidebar.connect('project-selected', self._on_project_selected)
         self.sidebar.connect('project-deleted', self._on_project_deleted)
         paned.pack1(self.sidebar, False, False)
@@ -207,7 +208,7 @@ class MainWindow(Gtk.ApplicationWindow):
             self.config.model = model
             self.config.save()
             self.api_client = APIClient(self.config)
-            # Re-wire api_client to all views
+            self.sidebar.set_api_client(self.api_client)
             for view in (self.brief_view, self.examples_view,
                          self.profile_view, self.chapters_view,
                          self.manuscript_view):
