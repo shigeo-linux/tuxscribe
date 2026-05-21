@@ -12,7 +12,15 @@ class APIClient:
     def __init__(self, config):
         self.config = config
 
-    def _headers(self):
+    def _is_deepseek(self, model):
+        return (model or self.config.model).startswith('deepseek-')
+
+    def _headers(self, model=None):
+        if self._is_deepseek(model):
+            return {
+                'Authorization': f'Bearer {self.config.deepseek_api_key}',
+                'Content-Type': 'application/json',
+            }
         return {
             'Authorization': f'Bearer {self.config.api_key}',
             'Content-Type': 'application/json',
@@ -20,22 +28,28 @@ class APIClient:
             'X-Title': self.config.get('site_name', 'tuxscribe'),
         }
 
-    def _url(self, path):
+    def _url(self, path, model=None):
+        if self._is_deepseek(model):
+            return f"https://api.deepseek.com/v1/{path.lstrip('/')}"
         return f"{self.config.base_url.rstrip('/')}/{path.lstrip('/')}"
 
     def complete(self, messages, system=None, model=None):
-        if not self.config.api_key:
+        active_model = model or self.config.model
+        if self._is_deepseek(active_model):
+            if not self.config.deepseek_api_key:
+                raise APIError("No DeepSeek API key configured. Open Settings to add it.")
+        elif not self.config.api_key:
             raise APIError("No API key configured. Open Settings to add your OpenRouter API key.")
         payload = {
-            'model': model or self.config.model,
+            'model': active_model,
             'messages': messages,
         }
         if system:
             payload['messages'] = [{'role': 'system', 'content': system}] + list(messages)
         try:
             resp = requests.post(
-                self._url('/chat/completions'),
-                headers=self._headers(),
+                self._url('/chat/completions', active_model),
+                headers=self._headers(active_model),
                 json=payload,
                 timeout=120,
             )
@@ -55,13 +69,19 @@ class APIClient:
                         on_chunk=None, on_done=None, on_error=None):
         """Stream completion in a background thread. Callbacks are called on the GTK main thread."""
         def run():
-            if not self.config.api_key:
+            active_model = model or self.config.model
+            if self._is_deepseek(active_model):
+                if not self.config.deepseek_api_key:
+                    if on_error:
+                        GLib.idle_add(on_error, "No DeepSeek API key configured. Open Settings to add it.")
+                    return
+            elif not self.config.api_key:
                 if on_error:
                     GLib.idle_add(on_error, "No API key configured. Open Settings to add your OpenRouter API key.")
                 return
 
             payload = {
-                'model': model or self.config.model,
+                'model': active_model,
                 'messages': messages,
                 'stream': True,
             }
@@ -70,8 +90,8 @@ class APIClient:
 
             try:
                 resp = requests.post(
-                    self._url('/chat/completions'),
-                    headers=self._headers(),
+                    self._url('/chat/completions', active_model),
+                    headers=self._headers(active_model),
                     json=payload,
                     stream=True,
                     timeout=180,

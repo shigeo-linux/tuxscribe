@@ -3,15 +3,15 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 
 POPULAR_MODELS = [
-    ('openrouter/auto', 'Auto Router'),
-    ('anthropic/claude-3.5-sonnet', 'Claude 3.5 Sonnet'),
-    ('anthropic/claude-3-opus', 'Claude 3 Opus'),
-    ('anthropic/claude-3-haiku', 'Claude 3 Haiku (Fast)'),
-    ('openai/gpt-4o', 'GPT-4o'),
-    ('openai/gpt-4-turbo', 'GPT-4 Turbo'),
-    ('google/gemini-pro-1.5', 'Gemini Pro 1.5'),
-    ('meta-llama/llama-3.1-70b-instruct', 'Llama 3.1 70B'),
-    ('mistralai/mistral-large', 'Mistral Large'),
+    ('openrouter/auto', 'Auto Router (OpenRouter)'),
+    ('anthropic/claude-3.5-sonnet', 'Claude 3.5 Sonnet (OpenRouter)'),
+    ('anthropic/claude-3-opus', 'Claude 3 Opus (OpenRouter)'),
+    ('openai/gpt-4o', 'GPT-4o (OpenRouter)'),
+    ('google/gemini-pro-1.5', 'Gemini Pro 1.5 (OpenRouter)'),
+    ('meta-llama/llama-3.1-70b-instruct', 'Llama 3.1 70B (OpenRouter)'),
+    ('mistralai/mistral-large', 'Mistral Large (OpenRouter)'),
+    ('deepseek-v4-pro', 'DeepSeek V4 Pro ★ Adult Fiction'),
+    ('deepseek-chat', 'DeepSeek Chat (DeepSeek)'),
 ]
 
 
@@ -59,6 +59,31 @@ class SettingsDialog(Gtk.Dialog):
 
         box.pack_start(api_frame, False, False, 0)
 
+        # DeepSeek API Key
+        ds_frame = Gtk.Frame(label="DeepSeek API (optional — for adult fiction)")
+        ds_frame.set_label_align(0, 0.5)
+        ds_inner = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=8)
+        ds_inner.set_border_width(12)
+        ds_frame.add(ds_inner)
+
+        ds_key_label = Gtk.Label(label="API Key", xalign=0)
+        ds_key_label.get_style_context().add_class("dim-label")
+        ds_inner.pack_start(ds_key_label, False, False, 0)
+
+        self.deepseek_key_entry = Gtk.Entry()
+        self.deepseek_key_entry.set_visibility(False)
+        self.deepseek_key_entry.set_input_purpose(Gtk.InputPurpose.PASSWORD)
+        self.deepseek_key_entry.set_text(config.deepseek_api_key or '')
+        self.deepseek_key_entry.set_placeholder_text("sk-...")
+        ds_inner.pack_start(self.deepseek_key_entry, False, False, 0)
+
+        ds_hint = Gtk.Label()
+        ds_hint.set_markup('<small><a href="https://platform.deepseek.com/api_keys">Get your key at platform.deepseek.com</a></small>')
+        ds_hint.set_xalign(0)
+        ds_inner.pack_start(ds_hint, False, False, 0)
+
+        box.pack_start(ds_frame, False, False, 0)
+
         # Model selection
         model_frame = Gtk.Frame(label="Model")
         model_frame.set_label_align(0, 0.5)
@@ -97,9 +122,10 @@ class SettingsDialog(Gtk.Dialog):
 
     def get_values(self):
         api_key = self.api_key_entry.get_text().strip()
+        deepseek_key = self.deepseek_key_entry.get_text().strip()
         active_id = self.model_combo.get_active_id()
         if active_id:
             model = active_id
         else:
             model = self.model_combo.get_child().get_text().strip()
-        return api_key, model
+        return api_key, deepseek_key, model

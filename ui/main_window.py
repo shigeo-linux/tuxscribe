@@ -203,8 +203,9 @@ class MainWindow(Gtk.ApplicationWindow):
         dialog = SettingsDialog(self, self.config)
         response = dialog.run()
         if response == Gtk.ResponseType.OK:
-            api_key, model = dialog.get_values()
+            api_key, deepseek_key, model = dialog.get_values()
             self.config.api_key = api_key
+            self.config.deepseek_api_key = deepseek_key
             self.config.model = model
             self.config.save()
             self.api_client = APIClient(self.config)

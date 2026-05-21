@@ -6,6 +6,7 @@ CONFIG_FILE = os.path.join(CONFIG_DIR, 'config.json')
 
 DEFAULTS = {
     'api_key': '',
+    'deepseek_api_key': '',
     'model': 'openrouter/auto',
     'base_url': 'https://openrouter.ai/api/v1',
     'site_url': 'https://tuxscribe.app',
@@ -53,6 +54,14 @@ class Config:
     @model.setter
     def model(self, value):
         self._data['model'] = value
+
+    @property
+    def deepseek_api_key(self):
+        return self._data.get('deepseek_api_key', '')
+
+    @deepseek_api_key.setter
+    def deepseek_api_key(self, value):
+        self._data['deepseek_api_key'] = value
 
     @property
     def base_url(self):
