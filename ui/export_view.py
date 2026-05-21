@@ -127,21 +127,6 @@ class ExportView(Gtk.Box):
         self.status_label.set_line_wrap(True)
         inner.pack_start(self.status_label, False, False, 0)
 
-        # ── Dependency notice ──────────────────────────────────────
-        dep_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
-        dep_box.get_style_context().add_class('info-bar')
-        dep_box.set_border_width(10)
-
-        dep_label = Gtk.Label()
-        dep_label.set_markup(
-            '<b>Required packages</b> (install once if missing):\n'
-            '<tt>pip3 install ebooklib python-docx reportlab</tt>'
-        )
-        dep_label.set_xalign(0)
-        dep_label.set_selectable(True)
-        dep_box.pack_start(dep_label, False, False, 0)
-
-        inner.pack_start(dep_box, False, False, 0)
 
     def load_project(self, project_id):
         self.project_id = project_id

@@ -35,6 +35,7 @@ sudo chmod +x "${INSTALL_DIR}/tuxscribe.py"
 
 echo "Creating virtual environment..."
 sudo python3 -m venv --system-site-packages "${INSTALL_DIR}/venv"
+sudo "${INSTALL_DIR}/venv/bin/pip" install pypdf ebooklib python-docx reportlab
 
 # Install icon
 echo "Installing icon..."
