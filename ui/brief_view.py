@@ -1,4 +1,7 @@
 import gi
+import json
+import os
+from datetime import datetime
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk, Pango
 from ui.source_utils import build_combined_sources_prompt
@@ -70,6 +73,11 @@ class BriefView(Gtk.Box):
         self.summary_btn.set_sensitive(False)
         toolbar.pack_end(self.summary_btn, False, False, 0)
 
+        self.export_btn = Gtk.Button(label="Export JSON")
+        self.export_btn.connect('clicked', self._on_export)
+        self.export_btn.set_sensitive(False)
+        toolbar.pack_end(self.export_btn, False, False, 0)
+
         self.clear_btn = Gtk.Button(label="Clear")
         self.clear_btn.connect('clicked', self._on_clear)
         toolbar.pack_end(self.clear_btn, False, False, 0)
@@ -133,6 +141,7 @@ class BriefView(Gtk.Box):
             self._add_bubble(row['role'], row['content'])
 
         self.send_btn.set_sensitive(True)
+        self.export_btn.set_sensitive(True)
         self._update_word_count()
 
         if not self._messages:
@@ -300,6 +309,69 @@ class BriefView(Gtk.Box):
             f'<span color="gray"> (500+ recommended)</span>'
         )
         self.summary_btn.set_sensitive(total >= 100)
+
+    def _on_export(self, btn):
+        if not self.project_id or not self._messages:
+            return
+
+        proj = self.db.get_project(self.project_id)
+        proj_name = proj['name'] if proj else 'brief'
+        safe_name = ''.join(c if c.isalnum() or c in ' _-' else '_' for c in proj_name).strip()
+        timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+        default_filename = f"{safe_name}_brief_{timestamp}.json"
+
+        dialog = Gtk.FileChooserDialog(
+            title="Export Brief Chat",
+            transient_for=self.get_toplevel(),
+            action=Gtk.FileChooserAction.SAVE,
+        )
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_SAVE, Gtk.ResponseType.OK,
+        )
+        dialog.set_current_name(default_filename)
+        dialog.set_do_overwrite_confirmation(True)
+
+        f = Gtk.FileFilter()
+        f.set_name("JSON files")
+        f.add_pattern("*.json")
+        dialog.add_filter(f)
+
+        response = dialog.run()
+        path = dialog.get_filename()
+        dialog.destroy()
+
+        if response != Gtk.ResponseType.OK or not path:
+            return
+
+        rows = self.db.get_brief_messages(self.project_id)
+        data = {
+            'project': proj_name,
+            'exported_at': datetime.now().isoformat(),
+            'messages': [
+                {
+                    'role': r['role'],
+                    'content': r['content'],
+                    'created_at': r['created_at'],
+                }
+                for r in rows
+            ],
+        }
+
+        try:
+            with open(path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+        except OSError as e:
+            msg = Gtk.MessageDialog(
+                transient_for=self.get_toplevel(),
+                modal=True,
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.OK,
+                text="Could not save file",
+            )
+            msg.format_secondary_text(str(e))
+            msg.run()
+            msg.destroy()
 
     def _build_sources_text(self):
         proj = self.db.get_project(self.project_id)
