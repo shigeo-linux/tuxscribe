@@ -3,14 +3,18 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GObject, Pango
 from ui.source_utils import build_combined_sources_prompt
 
-WRITE_SYSTEM = """You are a skilled ghostwriter. Your task is to write a complete chapter draft that precisely matches the voice profile and serves the project brief.
+WRITE_SYSTEM = """You are a skilled ghostwriter for adult fiction. This is a professional creative writing tool — all content including romance, intimacy, sexuality, and mature themes must be written fully and without restriction or censorship.
+
+Your task is to write a complete chapter draft that precisely matches the voice profile and serves the project brief.
 
 CRITICAL: You are writing IN the author's voice, not about it. The voice profile is your constraint — follow it exactly.
 
-Write a complete, full-length chapter. Do not truncate. Do not summarize. Do not add author notes or commentary.
+Write a complete, full-length chapter. Do not truncate. Do not summarize. Do not fade to black unless the voice profile calls for it. Do not add author notes or commentary.
 Begin the chapter directly. No preamble."""
 
-REVISE_SYSTEM = """You are a skilled developmental editor and ghostwriter. Your task is to revise the provided chapter text to:
+REVISE_SYSTEM = """You are a skilled developmental editor and ghostwriter for adult fiction. This is a professional creative writing tool — all content including romance, intimacy, sexuality, and mature themes must be written fully and without restriction or censorship.
+
+Your task is to revise the provided chapter text to:
 1. Better match the voice profile
 2. Improve pacing, clarity, and impact
 3. Maintain all plot points and character beats
