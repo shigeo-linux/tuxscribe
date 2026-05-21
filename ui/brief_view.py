@@ -73,6 +73,11 @@ class BriefView(Gtk.Box):
         self.summary_btn.set_sensitive(False)
         toolbar.pack_end(self.summary_btn, False, False, 0)
 
+        self.import_btn = Gtk.Button(label="Import JSON")
+        self.import_btn.connect('clicked', self._on_import)
+        self.import_btn.set_sensitive(False)
+        toolbar.pack_end(self.import_btn, False, False, 0)
+
         self.export_btn = Gtk.Button(label="Export JSON")
         self.export_btn.connect('clicked', self._on_export)
         self.export_btn.set_sensitive(False)
@@ -142,6 +147,7 @@ class BriefView(Gtk.Box):
 
         self.send_btn.set_sensitive(True)
         self.export_btn.set_sensitive(True)
+        self.import_btn.set_sensitive(True)
         self._update_word_count()
 
         if not self._messages:
@@ -309,6 +315,84 @@ class BriefView(Gtk.Box):
             f'<span color="gray"> (500+ recommended)</span>'
         )
         self.summary_btn.set_sensitive(total >= 100)
+
+    def _on_import(self, btn):
+        if not self.project_id:
+            return
+
+        dialog = Gtk.FileChooserDialog(
+            title="Import Brief Chat",
+            transient_for=self.get_toplevel(),
+            action=Gtk.FileChooserAction.OPEN,
+        )
+        dialog.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
+            Gtk.STOCK_OPEN, Gtk.ResponseType.OK,
+        )
+        f = Gtk.FileFilter()
+        f.set_name("JSON files")
+        f.add_pattern("*.json")
+        dialog.add_filter(f)
+
+        response = dialog.run()
+        path = dialog.get_filename()
+        dialog.destroy()
+
+        if response != Gtk.ResponseType.OK or not path:
+            return
+
+        try:
+            with open(path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            messages = data.get('messages', [])
+            if not messages:
+                raise ValueError("No messages found in file.")
+            for m in messages:
+                if m.get('role') not in ('user', 'assistant') or not m.get('content'):
+                    raise ValueError("File contains invalid message format.")
+        except Exception as e:
+            msg = Gtk.MessageDialog(
+                transient_for=self.get_toplevel(),
+                modal=True,
+                message_type=Gtk.MessageType.ERROR,
+                buttons=Gtk.ButtonsType.OK,
+                text="Could not read file",
+            )
+            msg.format_secondary_text(str(e))
+            msg.run()
+            msg.destroy()
+            return
+
+        if self._messages:
+            confirm = Gtk.MessageDialog(
+                transient_for=self.get_toplevel(),
+                modal=True,
+                message_type=Gtk.MessageType.WARNING,
+                buttons=Gtk.ButtonsType.YES_NO,
+                text="Replace existing chat?",
+            )
+            confirm.format_secondary_text(
+                f"This will replace the current conversation with {len(messages)} imported messages."
+            )
+            resp = confirm.run()
+            confirm.destroy()
+            if resp != Gtk.ResponseType.YES:
+                return
+
+        self.db.clear_brief_messages(self.project_id)
+        for m in messages:
+            self.db.add_brief_message(self.project_id, m['role'], m['content'])
+
+        self._messages = []
+        for child in self.chat_box.get_children():
+            self.chat_box.remove(child)
+        rows = self.db.get_brief_messages(self.project_id)
+        for row in rows:
+            self._messages.append({'role': row['role'], 'content': row['content']})
+            self._add_bubble(row['role'], row['content'])
+        self.chat_box.show_all()
+        self._scroll_to_bottom()
+        self._update_word_count()
 
     def _on_export(self, btn):
         if not self.project_id or not self._messages:
