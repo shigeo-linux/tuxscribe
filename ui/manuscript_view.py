@@ -9,6 +9,8 @@ Your task is to write a complete chapter draft that precisely matches the voice 
 
 CRITICAL: You are writing IN the author's voice, not about it. The voice profile is your constraint — follow it exactly.
 
+CRITICAL: If a BANNED WORDS AND PHRASES list is provided, those words and phrases are absolutely forbidden. Do not use any of them — not once, not in dialogue, not in narration, not anywhere.
+
 Write a complete, full-length chapter. Do not truncate. Do not summarize. Do not fade to black unless the voice profile calls for it. Do not add author notes or commentary.
 Begin the chapter directly. No preamble."""
 
@@ -19,6 +21,8 @@ Your task is to revise the provided chapter text to:
 2. Improve pacing, clarity, and impact
 3. Maintain all plot points and character beats
 4. Strengthen the prose without losing the author's intent
+
+CRITICAL: If a BANNED WORDS AND PHRASES list is provided, those words and phrases are absolutely forbidden. Remove every instance from the draft — not one may remain.
 
 Return only the revised text. No commentary. No preamble."""
 
@@ -366,7 +370,7 @@ Write the complete chapter now."""
         else:
             system = WRITE_SYSTEM
         if excluded:
-            system += "\n\n---\nPHRASES TO NEVER USE:\n" + '\n'.join(f"- {p}" for p in excluded)
+            system += "\n\n---\nBANNED WORDS AND PHRASES — DO NOT USE UNDER ANY CIRCUMSTANCES:\n" + '\n'.join(f"- {p}" for p in excluded)
 
         self.api_client.stream_complete(
             messages=[{'role': 'user', 'content': user_content}],
@@ -443,7 +447,7 @@ CURRENT DRAFT:
         else:
             system = REVISE_SYSTEM
         if excluded:
-            system += "\n\n---\nPHRASES TO NEVER USE:\n" + '\n'.join(f"- {p}" for p in excluded)
+            system += "\n\n---\nBANNED WORDS AND PHRASES — DO NOT USE UNDER ANY CIRCUMSTANCES:\n" + '\n'.join(f"- {p}" for p in excluded)
 
         self.api_client.stream_complete(
             messages=[{'role': 'user', 'content': user_content}],
