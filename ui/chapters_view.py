@@ -336,6 +336,7 @@ class ChaptersView(Gtk.Box):
             self._show_no_selection()
             return
 
+        self.save_current()
         self._selected_chapter_id = row.chapter_id
         self._load_chapter_into_editor(row.chapter_id)
         self.emit('chapter-selected', row.chapter_id)
@@ -487,6 +488,17 @@ class ChaptersView(Gtk.Box):
         dialog.format_secondary_text(error_msg)
         dialog.run()
         dialog.destroy()
+
+    def save_current(self):
+        if not self._selected_chapter_id:
+            return
+        title = self.title_entry.get_text().strip()
+        synopsis = self.synopsis_buf.get_text(
+            self.synopsis_buf.get_start_iter(), self.synopsis_buf.get_end_iter(), False
+        )
+        status = self.status_combo.get_active_id() or 'planned'
+        self.db.update_chapter(self._selected_chapter_id,
+                               title=title, synopsis=synopsis, status=status)
 
     def get_chapters(self):
         if not self.project_id:

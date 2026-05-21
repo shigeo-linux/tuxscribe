@@ -173,6 +173,7 @@ class MainWindow(Gtk.ApplicationWindow):
         elif page == self.chapters_view:
             self.chapters_view.refresh_button_state()
         elif page == self.manuscript_view:
+            self.chapters_view.save_current()
             self.manuscript_view._refresh_chapter_list()
 
     def _on_project_selected(self, sidebar, project_id):
