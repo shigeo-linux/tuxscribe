@@ -1,6 +1,6 @@
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk, GObject
+from gi.repository import Gtk, GObject, GLib
 
 PLAN_SYSTEM_NOVEL = """You are a developmental editor and story architect. Based on the project brief provided, create a detailed chapter-by-chapter plan.
 
@@ -147,6 +147,7 @@ class ChaptersView(Gtk.Box):
         self.project_id = None
         self._selected_chapter_id = None
         self._generating = False
+        self._programmatic_select = False
 
         self._build_ui()
 
@@ -311,24 +312,28 @@ class ChaptersView(Gtk.Box):
         self._update_generate_btn()
 
     def _refresh_list(self):
-        for child in self.chapter_list.get_children():
-            self.chapter_list.remove(child)
+        self._programmatic_select = True
+        try:
+            for child in self.chapter_list.get_children():
+                self.chapter_list.remove(child)
 
-        if not self.project_id:
-            return
+            if not self.project_id:
+                return
 
-        chapters = self.db.get_chapters(self.project_id)
-        for ch in chapters:
-            row = ChapterRow(ch)
-            self.chapter_list.add(row)
+            chapters = self.db.get_chapters(self.project_id)
+            for ch in chapters:
+                row = ChapterRow(ch)
+                self.chapter_list.add(row)
 
-        self.chapter_list.show_all()
+            self.chapter_list.show_all()
 
-        if self._selected_chapter_id:
-            for row in self.chapter_list.get_children():
-                if row.chapter_id == self._selected_chapter_id:
-                    self.chapter_list.select_row(row)
-                    break
+            if self._selected_chapter_id:
+                for row in self.chapter_list.get_children():
+                    if row.chapter_id == self._selected_chapter_id:
+                        self.chapter_list.select_row(row)
+                        break
+        finally:
+            self._programmatic_select = False
 
     def _on_chapter_selected(self, listbox, row):
         if row is None:
@@ -336,7 +341,8 @@ class ChaptersView(Gtk.Box):
             self._show_no_selection()
             return
 
-        self.save_current()
+        if not self._programmatic_select:
+            self.save_current()
         self._selected_chapter_id = row.chapter_id
         self._load_chapter_into_editor(row.chapter_id)
         self.emit('chapter-selected', row.chapter_id)
@@ -376,7 +382,7 @@ class ChaptersView(Gtk.Box):
 
         self.db.update_chapter(self._selected_chapter_id,
                                title=title, synopsis=synopsis, status=status)
-        self._refresh_list()
+        GLib.idle_add(self._refresh_list)
 
     def _on_delete_chapter(self, btn):
         if not self._selected_chapter_id:
@@ -397,8 +403,8 @@ class ChaptersView(Gtk.Box):
             self.db.delete_chapter(self._selected_chapter_id)
             self.db.reorder_chapters(self.project_id)
             self._selected_chapter_id = None
-            self._refresh_list()
             self._show_no_selection()
+            GLib.idle_add(self._refresh_list)
 
     def _on_add_chapter(self, btn):
         if not self.project_id:
@@ -408,8 +414,7 @@ class ChaptersView(Gtk.Box):
         next_num = max((c['chapter_number'] for c in chapters), default=0) + 1
         chapter_id = self.db.create_chapter(self.project_id, next_num, title='')
         self._selected_chapter_id = chapter_id
-        self._refresh_list()
-        self._load_chapter_into_editor(chapter_id)
+        GLib.idle_add(self._refresh_list)
 
     def _on_generate_plan(self, btn):
         if self._generating or not self.project_id:
