@@ -365,12 +365,14 @@ Write the complete chapter now."""
         if sources_text:
             user_content = f"SOURCES:\n\n{sources_text}\n\n---\n\n{user_content}"
 
-        if voice_profile:
-            system = f"{WRITE_SYSTEM}\n\n---\nVOICE PROFILE:\n{voice_profile}"
-        else:
-            system = WRITE_SYSTEM
+        system = WRITE_SYSTEM
         if excluded:
-            system += "\n\n---\nBANNED WORDS AND PHRASES — DO NOT USE UNDER ANY CIRCUMSTANCES:\n" + '\n'.join(f"- {p}" for p in excluded)
+            banned_block = "BANNED WORDS AND PHRASES — DO NOT USE UNDER ANY CIRCUMSTANCES:\n" + '\n'.join(f"- {p}" for p in excluded)
+            system += f"\n\n---\n{banned_block}"
+        if voice_profile:
+            system += f"\n\n---\nVOICE PROFILE:\n{voice_profile}"
+        if excluded:
+            user_content += f"\n\nREMINDER: Do not use any of these banned words or phrases: {', '.join(excluded)}"
 
         self.api_client.stream_complete(
             messages=[{'role': 'user', 'content': user_content}],
@@ -442,12 +444,14 @@ CURRENT DRAFT:
         if sources_text:
             user_content = f"SOURCES:\n\n{sources_text}\n\n---\n\n{user_content}"
 
-        if voice_profile:
-            system = f"{REVISE_SYSTEM}\n\n---\nVOICE PROFILE:\n{voice_profile}"
-        else:
-            system = REVISE_SYSTEM
+        system = REVISE_SYSTEM
         if excluded:
-            system += "\n\n---\nBANNED WORDS AND PHRASES — DO NOT USE UNDER ANY CIRCUMSTANCES:\n" + '\n'.join(f"- {p}" for p in excluded)
+            banned_block = "BANNED WORDS AND PHRASES — DO NOT USE UNDER ANY CIRCUMSTANCES:\n" + '\n'.join(f"- {p}" for p in excluded)
+            system += f"\n\n---\n{banned_block}"
+        if voice_profile:
+            system += f"\n\n---\nVOICE PROFILE:\n{voice_profile}"
+        if excluded:
+            user_content += f"\n\nREMINDER: Do not use any of these banned words or phrases: {', '.join(excluded)}"
 
         self.api_client.stream_complete(
             messages=[{'role': 'user', 'content': user_content}],
